@@ -3,8 +3,6 @@ import streamlit as st
 from scripts.utils import load_metadata, read_flipside
 from scripts.talk import Downloader
 
-from pages.single_moonbird import single_moonbird_page
-from pages.traits import trait_page as trait_page_old
 from pages.moonbird_main import main_page
 from pages.moonbird_trait import trait_page
 from pages.moonbird_attribute import attribute_page
@@ -31,23 +29,44 @@ This dashboard for Flipside looks at
 """
 )
 
-radio_choice = st.sidebar.radio(
-    "Choose", ("Main", "Traits", "Traits_old", "Moonbirds"), index=0
-)
-if radio_choice == "Moonbirds":
-    single_moonbird_page(downloader, metadata, df)
-elif radio_choice == "Traits":
+radio_choice = st.sidebar.radio("Choose", ("Main", "Traits and Prices"), index=0)
+if radio_choice == "Main":
+    main_page(df, downloader)
+elif radio_choice == "Traits and Prices":
     trait_choice = st.sidebar.radio("Choose Trait", traits, index=0)
-    st.markdown(
-        f"""## Selected trait: {trait_choice}
+    with st.expander("Show Summary"):
+        st.markdown(
+            f"""## Selected trait: {trait_choice}
 
-The unusual is interesting. Degree of rarity and probability are essentially identical concepts. [Weaver, 1948](https://www.jstor.org/stable/22339)
+    The unusual is interesting. Degree of rarity and probability are essentially identical concepts. 
+    [Weaver, 1948](https://www.jstor.org/stable/22339)
 
-Here we order the the traits and their attributes, based on the probability they occur. 
-The smaller the probability of an trait/attribute to occur thus the rarer the trait/attribute. 
-The traits with less probable tend to be priced higher than the more common traits
-"""
-    )
+    Here we order the the traits and their attributes, based on the probability they occur. 
+    The smaller the probability of an trait/attribute to occur thus the rarer the trait/attribute. 
+    The traits with less probable tend to be priced higher than the more common traits.
+
+    Although multiple traits are rare, some are shown with pricing. 
+    These are:
+    - Eyewear (in general but no attributes specially)
+    - Outerwear (in general but no attributes specially)
+    - Headwear (essentially Chromie)
+        - Chromie
+    - Body (rare bodies)
+        - Jade
+        - Golden
+        - Enlightened
+        - Cosmic
+        - Glitch
+        - Skeleton
+    - Feather
+        - All the Legendary attributes and especially Legendary Guardian
+    - Background (rare backgrounds)
+        - Jade Green
+        - Englightened Purple
+        - Glitch Red
+        - Cosmic Purple
+    """
+        )
     data_prob = metadata.drop_duplicates(subset=["trait_type"]).sort_values(
         by="trait_type_rarity"
     )
@@ -58,9 +77,5 @@ The traits with less probable tend to be priced higher than the more common trai
         trait_page(data_prob, idx, data_combined, trait_choice, downloader)
     else:
         attribute_page(metadata, data_combined, trait_choice, downloader)
-elif radio_choice == "Traits_old":
-    trait_page_old(downloader, metadata, df)
-elif radio_choice == "Main":
-    main_page(df, downloader)
 else:
     st.write("shouldn't be here")
